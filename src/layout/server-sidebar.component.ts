@@ -38,11 +38,9 @@ export class ServerSidebarComponent implements OnInit, OnDestroy {
     errorMessage = ''
     mode: 'servers'|'sftp' = 'servers'
 
-    @HostBinding('class.overlay') get overlay (): boolean { return !this.state.pinned }
-    @HostBinding('class.collapsed') get collapsed (): boolean { return this.state.collapsed }
+    @HostBinding('class.hidden') get hidden (): boolean { return !this.sidebarVisible }
     @HostBinding('class.mac-inset') macInset = false
-    @HostBinding('class.below-tabs') belowTabs = false
-    @HostBinding('style.width.px') get hostWidth (): number { return this.state.collapsed ? 0 : this.state.width }
+    @HostBinding('style.width.px') get hostWidth (): number { return this.state.width }
 
     private configSubscription?: Subscription
     private windowElement: HTMLElement | null = null
@@ -64,6 +62,7 @@ export class ServerSidebarComponent implements OnInit, OnDestroy {
         this.updateLayoutFlags()
         this.updateTransferMenuVisibility()
         this.configSubscription = this.config.changed$.subscribe(() => {
+            this.updateDockedClass()
             this.updateLayoutFlags()
             this.ensureModeValid()
             this.updateTransferMenuVisibility()
@@ -76,6 +75,10 @@ export class ServerSidebarComponent implements OnInit, OnDestroy {
         this.configSubscription?.unsubscribe()
         this.windowElement?.classList.remove('tabby-sidebar-docked')
         document.body.classList.remove('tabby-sidebar-hide-transfers')
+    }
+
+    get sidebarVisible (): boolean {
+        return this.config.store.tabbySidebar?.showSidebar ?? true
     }
 
     get sftpEnabled (): boolean {
@@ -119,22 +122,6 @@ export class ServerSidebarComponent implements OnInit, OnDestroy {
         this.persist()
     }
 
-    togglePinned (): void {
-        this.state.pinned = !this.state.pinned
-        this.persist()
-        this.updateDockedClass()
-    }
-
-    collapse (): void {
-        this.setCollapsed(true)
-    }
-
-    expand (event: MouseEvent): void {
-        event.stopPropagation()
-        this.setCollapsed(false)
-        void this.loadGroups()
-    }
-
     async connect (profile: PartialProfile<Profile>): Promise<void> {
         this.errorMessage = ''
         try {
@@ -143,9 +130,6 @@ export class ServerSidebarComponent implements OnInit, OnDestroy {
                 this.errorMessage = `无法打开「${profile.name}」`
                 return
             }
-            if (!this.state.pinned) {
-                this.setCollapsed(true)
-            }
         } catch (error) {
             console.error('tabby-sidebar: failed to open profile', error)
             this.errorMessage = `连接「${profile.name}」失败`
@@ -153,9 +137,6 @@ export class ServerSidebarComponent implements OnInit, OnDestroy {
     }
 
     startResize (event: MouseEvent): void {
-        if (this.state.collapsed) {
-            return
-        }
         this.resizing = true
         this.resizeStartX = event.clientX
         this.resizeStartWidth = this.state.width
@@ -178,25 +159,6 @@ export class ServerSidebarComponent implements OnInit, OnDestroy {
 
     trackProfile (_index: number, profile: PartialProfile<Profile>): string {
         return profile.id ?? profile.name
-    }
-
-    @HostListener('document:click', ['$event'])
-    onDocumentClick (event: MouseEvent): void {
-        if (this.state.pinned || this.state.collapsed) {
-            return
-        }
-        const target = event.target
-        if (target instanceof Node && this.elementRef.nativeElement.contains(target)) {
-            return
-        }
-        this.setCollapsed(true)
-    }
-
-    @HostListener('document:keydown', ['$event'])
-    onDocumentKeydown (event: KeyboardEvent): void {
-        if (event.key === 'Escape' && !this.state.pinned && !this.state.collapsed) {
-            this.setCollapsed(true)
-        }
     }
 
     @HostListener('document:mousemove', ['$event'])
@@ -222,16 +184,6 @@ export class ServerSidebarComponent implements OnInit, OnDestroy {
         this.updateLayoutFlags()
     }
 
-    private setCollapsed (collapsed: boolean): void {
-        if (this.state.collapsed === collapsed) {
-            return
-        }
-        this.state.collapsed = collapsed
-        this.persist()
-        this.updateDockedClass()
-        this.updateTransferMenuVisibility()
-    }
-
     private ensureModeValid (): void {
         if (this.mode === 'sftp' && !this.sftpEnabled) {
             this.mode = 'servers'
@@ -244,7 +196,7 @@ export class ServerSidebarComponent implements OnInit, OnDestroy {
     }
 
     private updateDockedClass (): void {
-        this.windowElement?.classList.toggle('tabby-sidebar-docked', this.state.pinned && !this.state.collapsed)
+        this.windowElement?.classList.toggle('tabby-sidebar-docked', this.sidebarVisible)
     }
 
     private async loadGroups (): Promise<void> {
@@ -281,9 +233,6 @@ export class ServerSidebarComponent implements OnInit, OnDestroy {
         this.macInset = this.hostApp.platform === Platform.macOS &&
             this.config.store.appearance.frame === 'thin' &&
             !this.hostWindow.isFullscreen
-
-        const tabsVisible = !this.hostWindow.isFullscreen || this.config.store.appearance.tabsInFullscreen
-        this.belowTabs = this.config.store.appearance.tabsLocation === 'top' && tabsVisible
     }
 
     private persist (): void {

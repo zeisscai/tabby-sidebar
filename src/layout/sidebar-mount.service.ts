@@ -49,13 +49,6 @@ export class SidebarMountService {
             return
         }
 
-        const windowElement = content.parentElement
-        if (!windowElement) {
-            console.error('tabby-sidebar: could not locate the Tabby window element')
-            return
-        }
-        windowElement.style.position = 'relative'
-
         if (!document.getElementById(GLOBAL_STYLE_ID)) {
             const styleElement = document.createElement('style')
             styleElement.id = GLOBAL_STYLE_ID

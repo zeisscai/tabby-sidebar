@@ -3,6 +3,7 @@ import { ConfigProvider } from 'tabby-core'
 export type SftpDateFormat = 'locale'|'dmy'|'iso'
 
 export interface TabbySidebarOptions {
+    showSidebar: boolean
     hideNativeTransfersMenu: boolean
     showSftp: boolean
     sftpAutoRefreshSeconds: number
@@ -15,6 +16,7 @@ export interface TabbySidebarOptions {
 export class TabbySidebarConfigProvider extends ConfigProvider {
     defaults = {
         tabbySidebar: {
+            showSidebar: true,
             // Tabby's dropdown opens by itself on every transfer. Off by
             // default here because this plugin has no transfer panel of its
             // own to replace it.

@@ -1,23 +1,6 @@
-<div class="sidebar" *ngIf="!state.collapsed">
+<div class="sidebar">
     <div class="sidebar-header">
         <span class="sidebar-title">服务器</span>
-        <div class="header-actions">
-            <button class="icon-button"
-                    type="button"
-                    [class.active]="state.pinned"
-                    [title]="state.pinned ? '取消固定（自动隐藏）' : '固定显示'"
-                    [attr.aria-label]="state.pinned ? '取消固定' : '固定显示'"
-                    (click)="togglePinned()">
-                <i class="fas fa-thumbtack"></i>
-            </button>
-            <button class="icon-button"
-                    type="button"
-                    title="收起"
-                    aria-label="收起"
-                    (click)="collapse()">
-                <i class="fas fa-chevron-left"></i>
-            </button>
-        </div>
     </div>
 
     <div class="view-switch" *ngIf="sftpEnabled">
@@ -103,12 +86,3 @@
 
     <div class="grabber" (mousedown)="startResize($event)"></div>
 </div>
-
-<button class="edge-handle"
-        type="button"
-        *ngIf="state.collapsed"
-        title="展开侧边栏"
-        aria-label="展开侧边栏"
-        (click)="expand($event)">
-    <i class="fas fa-chevron-right"></i>
-</button>

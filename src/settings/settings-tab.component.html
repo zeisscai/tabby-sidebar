@@ -15,6 +15,16 @@
         <div class="settings-card">
             <div class="setting-row">
                 <div class="setting-text">
+                    <div class="setting-label">显示侧边栏</div>
+                    <div class="setting-desc">在主窗口左侧显示服务器侧边栏。关闭后侧边栏从布局中移除，可通过此开关重新打开。</div>
+                </div>
+                <div class="setting-control">
+                    <toggle [ngModel]="showSidebar" (ngModelChange)="setShowSidebar($event)"></toggle>
+                </div>
+            </div>
+
+            <div class="setting-row">
+                <div class="setting-text">
                     <div class="setting-label">隐藏 Tabby 的传输菜单</div>
                     <div class="setting-desc">隐藏标签栏中的原生传输下拉菜单。关闭后可在传输时查看原生进度。</div>
                 </div>

@@ -22,6 +22,15 @@ export class TabbySidebarSettingsComponent {
         this.section = section
     }
 
+    get showSidebar (): boolean {
+        return this.config.store.tabbySidebar?.showSidebar ?? true
+    }
+
+    async setShowSidebar (value: boolean): Promise<void> {
+        this.config.store.tabbySidebar.showSidebar = value
+        await this.config.save()
+    }
+
     get hideNativeTransfersMenu (): boolean {
         return this.config.store.tabbySidebar?.hideNativeTransfersMenu ?? false
     }

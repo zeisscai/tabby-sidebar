@@ -1,6 +1,4 @@
 export interface SidebarState {
-    pinned: boolean
-    collapsed: boolean
     width: number
     groupCollapsed: Record<string, boolean>
 }
@@ -12,8 +10,6 @@ export const SIDEBAR_WIDTH_DEFAULT = 288
 
 function defaultState (): SidebarState {
     return {
-        pinned: true,
-        collapsed: false,
         width: SIDEBAR_WIDTH_DEFAULT,
         groupCollapsed: {},
     }
@@ -29,12 +25,6 @@ export function loadSidebarState (): SidebarState {
         }
 
         const parsed = JSON.parse(raw)
-        if (typeof parsed?.pinned === 'boolean') {
-            state.pinned = parsed.pinned
-        }
-        if (typeof parsed?.collapsed === 'boolean') {
-            state.collapsed = parsed.collapsed
-        }
         if (typeof parsed?.width === 'number' && Number.isFinite(parsed.width)) {
             state.width = Math.min(SIDEBAR_WIDTH_MAX, Math.max(SIDEBAR_WIDTH_MIN, parsed.width))
         }

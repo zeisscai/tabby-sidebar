@@ -2,7 +2,7 @@
 
 > 包名：`tabby-sidebar` · 目标版本：Tabby 1.0.2xx（Angular 15）
 >
-> 范围：在 Tabby 主窗口左侧提供可收起、可固定的 SSH 服务器列表，双击即可连接；同一侧栏内通过顶部
+> 范围：在 Tabby 主窗口左侧提供常驻的 SSH 服务器列表，双击即可连接；同一侧栏内通过顶部
 > 「服务器 / SFTP」切换按钮提供 SFTP 文件浏览，并提供对应的插件设置页。
 >
 > SFTP 部分参考 `tabby-better-sidebar` 的交互与设置项，只借鉴文件浏览能力：不引入其收藏、工作区、
@@ -17,16 +17,14 @@ Tabby 默认界面只有顶部的标签栏和「配置和连接」按钮，查�
 
 1. 列出已保存的 SSH 服务器，按 Tabby 的配置分组展示；
 2. 双击服务器直接打开连接 Tab；
-3. 侧边栏可收起；收起后仅在窗口左缘保留一个可展开的控制柄；
-4. 侧边栏可固定：
-   - 固定时占据布局空间，始终可见，不自动隐藏；
-   - 浮动时覆盖在终端内容上方，选中服务器或点击外部后自动收起；
-5. 记住固定状态、收起状态、宽度和分组折叠状态；
+3. 侧边栏停靠在主窗口左侧，始终占据布局空间，不自动隐藏；
+4. 通过设置 → 通用 → 「显示侧边栏」整体显示/隐藏侧边栏，行为与 `tabby-better-sidebar` 一致；
+5. 记住侧栏宽度和分组折叠状态；
 6. 适配 Tabby 主题色与 macOS 细边框（thin frame）窗口；
 7. 侧栏顶部提供「服务器 / SFTP」切换按钮，SFTP 视图浏览当前活动 SSH 会话的文件系统；
 8. SFTP 视图跟随活动 SSH Tab：每个会话缓存一个文件面板并记住浏览路径；会话失效时显示占位，
    可按配置自动切回服务器列表；
-9. 提供插件设置页：通用（隐藏 Tabby 原生传输菜单）、功能（SFTP 视图开关与显示选项）；
+9. 提供插件设置页：通用（显示侧边栏、隐藏 Tabby 原生传输菜单）、功能（SFTP 视图开关与显示选项）；
 10. 不引入参考插件的收藏、工作区、隧道、代码片段、传输列表等其余能力。
 
 ### 非目标
@@ -46,7 +44,7 @@ Tabby 没有官方的「侧边栏扩展」API，但外部插件可以在应用�
 
 | 方案 | 说明 | 结论 |
 | --- | --- | --- |
-| 开启原生 `showProfileTree` | 原生配置目录树；需双击启动、无法固定/浮动、混杂所有类型配置 | 不满足需求 |
+| 开启原生 `showProfileTree` | 原生配置目录树；需双击启动、无法整体隐藏、混杂所有类型配置 | 不满足需求 |
 | 修改 Tabby 核心模板 | 可直接增加布局区域，但需要维护 fork，升级成本高 | 不采用 |
 | 插件挂载自定义组件 | 不改核心，只用公开的服务与 DOM 结构 | **采用** |
 | 插件替换/嵌入 SFTP+ | 依赖 SFTP+ 私有声明，且已明确不做 | 不采用 |
@@ -56,8 +54,8 @@ Tabby 没有官方的「侧边栏扩展」API，但外部插件可以在应用�
 SFTP 视图不是独立窗口，而是侧栏内的第二种模式：顶部切换按钮在「服务器列表 / SFTP 文件浏览」
 之间切换。文件面板通过 `session.openSFTP()` 取得当前 SSH 会话的 SFTP 通道，不额外建立连接。
 
-侧边栏挂在 `.window` 内、`.content.main` 之前。固定模式下它是 flex 子项，挤占主内容宽度；
-浮动模式下改为绝对定位覆盖在主内容之上。Tabby 的模态框层级（Bootstrap modal）高于侧边栏，
+侧边栏挂在 `.window` 内、`.content.main` 之前，作为 flex 子项挤占主内容宽度；关闭「显示侧边栏」后
+宿主元素变为 `display: none`，主内容自动占满窗口。Tabby 的模态框层级（Bootstrap modal）高于侧边栏，
 因此不会遮挡设置、编辑等弹窗。
 
 已知限制：这种 DOM 挂载方式不是官方扩展点，Tabby 大幅调整 `app-root` 模板后可能需要适配。
@@ -84,34 +82,24 @@ app-root
 - 使用 Tabby 主题变量（`--theme-bg-more-2`、`--theme-secondary`、`--theme-fg` 等）；
 - 背景在主题底色上混入 10% 前景色，呈深灰色，与纯黑终端区形成可见分界；
 - macOS thin frame 下增加顶部留白与拖拽区，避免遮挡红绿灯按钮；
-- 标签栏位于顶部时，浮动层从标签栏下方开始，避免遮挡标签；
-- 固定展开时，标签栏紧随侧栏，原 macOS 红绿灯留白被隐藏；收起或浮动时恢复；
-- 收起后仅在左缘保留一个竖向展开控制柄，其中心与展开态的「收起」按钮同高。
+- 侧栏可见时，标签栏紧随侧栏，原 macOS 红绿灯留白被隐藏；关闭显示开关后恢复。
 
-### 3.2 状态矩阵
+### 3.2 显示状态
 
-| 固定 | 收起 | 表现 |
-| --- | --- | --- |
-| 是 | 否 | 停靠展开：占据布局宽度，终端区域相应变窄 |
-| 是 | 是 | 仅左缘显示展开控制柄，终端占满宽度 |
-| 否 | 否 | 浮层展开：覆盖终端左侧，点击外部或选中服务器后收起 |
-| 否 | 是 | 仅左缘显示展开控制柄 |
-
-默认状态：**固定 + 展开**。
+| 设置「显示侧边栏」 | 表现 |
+| --- | --- |
+| 开（默认） | 停靠在左侧，占据布局宽度，终端区域相应变窄 |
+| 关 | 侧边栏从布局中移除，终端占满宽度；可在设置中重新打开 |
 
 ### 3.3 操作
 
 | 操作 | 结果 |
 | --- | --- |
 | 双击服务器 | 调用 Tabby 的 profile 打开逻辑新建连接 Tab |
-| 单击「固定」 | 在停靠/浮层之间切换 |
-| 单击「收起」 | 收起侧栏，保留左缘控制柄 |
-| 单击控制柄 | 展开侧栏（浮层模式下仍为浮层） |
+| 设置 → 通用 → 显示侧边栏 | 整体显示/隐藏侧边栏，修改即时生效 |
 | 单击分组标题 | 折叠/展开该分组 |
 | 搜索框输入 | 按名称、`user@host:port` 实时过滤；搜索时忽略分组折叠 |
 | 拖动右边缘 | 调整并保存宽度 |
-| 点击浮层外部 / Esc | 浮层模式下收起 |
-| 浮层模式连接成功 | 自动收起 |
 
 ### 3.4 空状态
 
@@ -140,6 +128,7 @@ SFTP 面板内的操作沿用 `tabby-ssh` 原生能力：双击进入目录/打�
 
 | 分组 | 设置项 | 默认值 | 说明 |
 | --- | --- | --- | --- |
+| 通用 | 显示侧边栏 | 开 | 关闭后侧边栏从布局中移除，修改即时生效 |
 | 通用 | 隐藏 Tabby 的传输菜单 | 关 | 隐藏标签栏中的原生传输下拉菜单 |
 | 功能 | SFTP 视图 | 开 | 显示侧栏顶部切换按钮与 SFTP 浏览 |
 | 功能 | 自动刷新间隔（秒） | 0 | 0 表示关闭；范围 0–3600 |
@@ -188,7 +177,7 @@ if (!tab) { /* 提示无法打开 */ }
 
 - 应用 `ready$` 后首次加载；
 - `config.changed$` 触发时重新读取分组；
-- 侧栏从收起状态展开时重新读取一次。
+- 「显示侧边栏」从关闭切回开启时重新读取一次。
 
 ### SFTP 会话绑定规则
 
@@ -228,7 +217,7 @@ tabby-sidebar/
     ├── typings.d.ts                    # *.html / *.css 类型声明
     ├── layout/
     │   ├── sidebar-mount.service.ts    # DOM 挂载、全局样式注入
-    │   ├── server-sidebar.component.ts # 列表、视图切换、传输菜单显隐
+    │   ├── server-sidebar.component.ts # 列表、视图切换、显示开关、传输菜单显隐
     │   ├── server-sidebar.component.html
     │   └── server-sidebar.component.css
     ├── sftp/
@@ -254,8 +243,7 @@ tabby-sidebar/
 1. 等待 `app-root .window` 与 `app-root .window > .content.main` 出现；
 2. 创建 `<tabby-server-sidebar>` 宿主节点并插入到 `.content.main` 之前；
 3. 通过 `ComponentFactoryResolver.resolveComponentFactory()` 创建组件；
-4. `ApplicationRef.attachView()` 纳入变更检测；
-5. 为 `.window` 设置 `position: relative`，供浮层模式定位。
+4. `ApplicationRef.attachView()` 纳入变更检测。
 
 ```ts
 const factory = resolver.resolveComponentFactory(ServerSidebarComponent)
@@ -279,7 +267,7 @@ ref.changeDetectorRef.detectChanges()
 ```
 
 避免 Angular JIT 在运行时通过 XHR 加载 `templateUrl` / `styleUrls`（外部插件没有对应的静态资源服务）。
-样式保留 Angular 默认的 emulated 封装；`:host(.overlay)`、`:host(.collapsed)` 控制外壳状态。
+样式保留 Angular 默认的 emulated 封装；`:host(.hidden)` 控制侧栏显隐，`:host(.mac-inset)` 处理 macOS 顶部留白。
 
 ### 5.4 状态持久化
 
@@ -287,15 +275,14 @@ ref.changeDetectorRef.detectChanges()
 
 ```ts
 interface SidebarState {
-  pinned: boolean
-  collapsed: boolean
   width: number
   groupCollapsed: Record<string, boolean>
 }
 ```
 
-默认值：`pinned: true`、`collapsed: false`、`width: 288`。
-写入前对宽度做 220–480 的夹取；读取失败或字段缺失时回落到默认值。
+默认值：`width: 288`。写入前对宽度做 220–480 的夹取；读取失败或字段缺失时回落到默认值。
+旧版本写入的 `pinned` / `collapsed` 字段会被忽略，不影响加载。显示与否由配置项
+`tabbySidebar.showSidebar` 控制，与窗口状态无关。
 
 ### 5.5 主题与平台适配
 
@@ -304,8 +291,8 @@ interface SidebarState {
 - `profile-icon` 组件复用 `TabbyCoreModule` 导出的 `ProfileIconComponent`，支持普通图标与 HTML/SVG 图标；
 - 注入 `HostAppService`、`HostWindowService`、`ConfigService`，在以下条件给宿主加 `mac-inset`：
   `macOS` + 非全屏 + `appearance.frame === 'thin'`；监听窗口 resize 更新；
-- 固定展开时给 `.window` 加 `tabby-sidebar-docked` 类，并注入一条全局样式隐藏
-  `.tab-bar > .inset.background`（macOS 红绿灯留白）；收起或切到浮层时移除该类。
+- 侧边栏可见时给 `.window` 加 `tabby-sidebar-docked` 类，并注入一条全局样式隐藏
+  `.tab-bar > .inset.background`（macOS 红绿灯留白）；关闭显示开关或插件销毁时移除该类。
 
 ### 5.6 SFTP 视图
 
@@ -395,14 +382,14 @@ ln -s "$PWD" "$HOME/Library/Application Support/tabby/plugins/node_modules/tabby
 - [x] 启动后左侧出现服务器侧栏，顶部按钮保持原样；
 - [x] 服务器列表仅显示 SSH 配置，分组与折叠正确（telnet 配置已排除）；
 - [x] 双击服务器打开新的 SSH Tab，单击不触发连接；
-- [x] 固定模式下侧栏挤占布局，连接后不收起；
-- [x] 浮动模式下侧栏覆盖终端，点击外部/Esc/连接后收起；
-- [x] 收起后控制柄可展开；刷新窗口后固定、收起、宽度、分组状态保留；
+- [x] 侧栏停靠时挤占布局，连接后保持显示；
+- [x] 侧栏不再显示固定/收起按钮，也没有收起后的边缘控制柄；
+- [x] 设置 → 通用 → 「显示侧边栏」可即时显示/隐藏；隐藏时终端占满宽度、红绿灯留白恢复；
+- [x] 重启后显示状态保持（关闭时不显示侧栏），宽度与分组状态保留；
 - [x] 拖动右边缘可调整宽度且被持久化；
 - [x] 搜索按名称与 `user@host` 过滤，搜索无结果时显示空状态；
-- [x] 固定展开时隐藏标签栏的 macOS 红绿灯留白，收起/浮动时恢复；
+- [x] 侧栏可见时隐藏标签栏的 macOS 红绿灯留白；
 - [x] 侧栏深灰背景与纯黑主界面边界清晰；
-- [x] 收起控制柄与展开态「收起」按钮同高；
 - [ ] 浅色主题、全屏模式下的显示效果（已完成 macOS thin frame + 深色主题验证）；
 - [ ] 打开设置/编辑配置等弹窗时，侧栏不遮挡弹窗。
 
