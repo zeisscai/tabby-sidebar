@@ -5,6 +5,12 @@ import { ServerSidebarComponent } from './server-sidebar.component'
 const CONTENT_SELECTOR = 'app-root .window > .content.main'
 const RETRY_DELAY = 50
 const MAX_ATTEMPTS = 40
+const GLOBAL_STYLE_ID = 'tabby-server-sidebar-global-style'
+const GLOBAL_STYLE = `
+    .window.tabby-sidebar-docked > .content.main > .tab-bar > .inset.background {
+        display: none !important;
+    }
+`
 
 @Injectable({ providedIn: 'root' })
 export class SidebarMountService {
@@ -41,6 +47,13 @@ export class SidebarMountService {
             return
         }
         windowElement.style.position = 'relative'
+
+        if (!document.getElementById(GLOBAL_STYLE_ID)) {
+            const styleElement = document.createElement('style')
+            styleElement.id = GLOBAL_STYLE_ID
+            styleElement.textContent = GLOBAL_STYLE
+            document.head.appendChild(styleElement)
+        }
 
         const hostElement = document.createElement('tabby-server-sidebar')
         content.before(hostElement)

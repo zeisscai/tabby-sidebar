@@ -53,7 +53,7 @@
                         type="button"
                         *ngFor="let profile of group.profiles; trackBy: trackProfile"
                         [title]="profileHost(profile)"
-                        (click)="connect(profile)">
+                        (dblclick)="connect(profile)">
                     <profile-icon *ngIf="profile.icon" [icon]="profile.icon" [color]="profile.color"></profile-icon>
                     <i class="fas fa-server server-fallback-icon"
                        *ngIf="!profile.icon"

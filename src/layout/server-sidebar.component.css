@@ -1,4 +1,5 @@
 :host {
+    --sidebar-bg: var(--theme-bg-more-2);
     display: flex;
     flex: 0 0 auto;
     flex-direction: column;
@@ -6,12 +7,18 @@
     min-width: 0;
     position: relative;
     z-index: 20;
-    background: var(--theme-bg-more-2);
+    background: var(--sidebar-bg);
     color: var(--theme-fg);
     border-right: 1px solid var(--theme-secondary);
     font-size: 13px;
     user-select: none;
     overflow: visible;
+}
+
+@supports (color: color-mix(in srgb, #000, #fff 10%)) {
+    :host {
+        --sidebar-bg: color-mix(in srgb, var(--theme-bg-more-2), var(--theme-fg) 10%);
+    }
 }
 
 :host(.overlay) {
@@ -377,22 +384,30 @@
     pointer-events: auto;
     position: absolute;
     left: 0;
-    top: 50%;
+    top: calc(var(--tabs-height) / 2);
     transform: translateY(-50%);
     display: flex;
     align-items: center;
     justify-content: center;
     width: 22px;
-    height: 72px;
+    height: 40px;
     padding: 0;
     border: 1px solid var(--theme-secondary);
     border-left: 0;
     border-radius: 0 6px 6px 0;
-    background: var(--theme-bg-more-2);
+    background: var(--sidebar-bg);
     color: var(--theme-secondary-fg);
     box-shadow: 2px 0 8px rgba(0, 0, 0, 0.25);
     cursor: pointer;
     z-index: 30;
+}
+
+:host(.mac-inset) .edge-handle {
+    top: calc(var(--tabs-height) * 1.5);
+}
+
+:host(.mac-inset.overlay.below-tabs) .edge-handle {
+    top: calc(var(--tabs-height) / 2);
 }
 
 .edge-handle:hover {

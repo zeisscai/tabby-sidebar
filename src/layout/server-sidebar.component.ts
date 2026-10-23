@@ -44,6 +44,7 @@ export class ServerSidebarComponent implements OnInit, OnDestroy {
     @HostBinding('style.width.px') get hostWidth (): number { return this.state.collapsed ? 0 : this.state.width }
 
     private configSubscription?: Subscription
+    private windowElement: HTMLElement | null = null
     private resizing = false
     private resizeStartX = 0
     private resizeStartWidth = 0
@@ -57,6 +58,8 @@ export class ServerSidebarComponent implements OnInit, OnDestroy {
     ) { }
 
     async ngOnInit (): Promise<void> {
+        this.windowElement = this.elementRef.nativeElement.parentElement
+        this.updateDockedClass()
         this.updateLayoutFlags()
         this.configSubscription = this.config.changed$.subscribe(() => {
             this.updateLayoutFlags()
@@ -67,6 +70,7 @@ export class ServerSidebarComponent implements OnInit, OnDestroy {
 
     ngOnDestroy (): void {
         this.configSubscription?.unsubscribe()
+        this.windowElement?.classList.remove('tabby-sidebar-docked')
     }
 
     get visibleGroups (): ServerGroup[] {
@@ -101,6 +105,7 @@ export class ServerSidebarComponent implements OnInit, OnDestroy {
     togglePinned (): void {
         this.state.pinned = !this.state.pinned
         this.persist()
+        this.updateDockedClass()
     }
 
     collapse (): void {
@@ -206,6 +211,11 @@ export class ServerSidebarComponent implements OnInit, OnDestroy {
         }
         this.state.collapsed = collapsed
         this.persist()
+        this.updateDockedClass()
+    }
+
+    private updateDockedClass (): void {
+        this.windowElement?.classList.toggle('tabby-sidebar-docked', this.state.pinned && !this.state.collapsed)
     }
 
     private async loadGroups (): Promise<void> {
