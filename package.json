@@ -1,11 +1,12 @@
 {
   "name": "tabby-sidebar",
   "version": "0.1.0",
-  "description": "A collapsible, pinnable server sidebar for Tabby",
+  "description": "An SSH server sidebar with integrated SFTP browsing for Tabby",
   "keywords": [
     "tabby-plugin",
     "ssh",
-    "sidebar"
+    "sidebar",
+    "sftp"
   ],
   "main": "dist/index.js",
   "files": [
@@ -23,13 +24,6 @@
   },
   "author": "zeiss",
   "license": "MIT",
-  "peerDependencies": {
-    "@angular/common": "^15",
-    "@angular/core": "^15",
-    "@angular/forms": "^15",
-    "rxjs": "^7",
-    "tabby-core": "*"
-  },
   "devDependencies": {
     "@angular/animations": "15.2.10",
     "@angular/common": "15.2.10",
