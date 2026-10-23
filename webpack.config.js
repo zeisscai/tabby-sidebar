@@ -42,6 +42,7 @@ module.exports = {
         'electron',
         /^rxjs/,
         /^@angular/,
+        /^@ng-bootstrap\//,
         /^tabby-/,
     ],
     devtool: 'source-map',

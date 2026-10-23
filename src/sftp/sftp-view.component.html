@@ -1,0 +1,10 @@
+<div class="sftp-view">
+    <div class="sftp-placeholder" *ngIf="waiting">
+        <i class="fas fa-folder-open"></i>
+        <p class="title">{{ waitingTitle }}</p>
+        <p class="hint">{{ waitingHint }}</p>
+        <button class="back" type="button" (click)="closed.emit()">返回服务器列表</button>
+    </div>
+
+    <div class="sftp-panel-host" #panelHost [hidden]="waiting"></div>
+</div>

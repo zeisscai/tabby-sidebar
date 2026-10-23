@@ -10,6 +10,14 @@ const GLOBAL_STYLE = `
     .window.tabby-sidebar-docked > .content.main > .tab-bar > .inset.background {
         display: none !important;
     }
+
+    body.tabby-sidebar-hide-transfers .btn-group.background > div[ngbDropdown] {
+        display: none !important;
+    }
+
+    body.tabby-sidebar-hide-transfers transfers-menu {
+        display: none !important;
+    }
 `
 
 @Injectable({ providedIn: 'root' })

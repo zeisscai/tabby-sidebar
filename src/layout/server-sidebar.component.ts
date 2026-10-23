@@ -36,6 +36,7 @@ export class ServerSidebarComponent implements OnInit, OnDestroy {
     filter = ''
     groups: ServerGroup[] = []
     errorMessage = ''
+    mode: 'servers'|'sftp' = 'servers'
 
     @HostBinding('class.overlay') get overlay (): boolean { return !this.state.pinned }
     @HostBinding('class.collapsed') get collapsed (): boolean { return this.state.collapsed }
@@ -61,8 +62,11 @@ export class ServerSidebarComponent implements OnInit, OnDestroy {
         this.windowElement = this.elementRef.nativeElement.parentElement
         this.updateDockedClass()
         this.updateLayoutFlags()
+        this.updateTransferMenuVisibility()
         this.configSubscription = this.config.changed$.subscribe(() => {
             this.updateLayoutFlags()
+            this.ensureModeValid()
+            this.updateTransferMenuVisibility()
             void this.loadGroups()
         })
         await this.loadGroups()
@@ -71,6 +75,19 @@ export class ServerSidebarComponent implements OnInit, OnDestroy {
     ngOnDestroy (): void {
         this.configSubscription?.unsubscribe()
         this.windowElement?.classList.remove('tabby-sidebar-docked')
+        document.body.classList.remove('tabby-sidebar-hide-transfers')
+    }
+
+    get sftpEnabled (): boolean {
+        return this.config.store.tabbySidebar?.showSftp ?? true
+    }
+
+    setMode (mode: 'servers'|'sftp'): void {
+        if (mode === 'sftp' && !this.sftpEnabled) {
+            return
+        }
+        this.mode = mode
+        this.updateTransferMenuVisibility()
     }
 
     get visibleGroups (): ServerGroup[] {
@@ -212,6 +229,18 @@ export class ServerSidebarComponent implements OnInit, OnDestroy {
         this.state.collapsed = collapsed
         this.persist()
         this.updateDockedClass()
+        this.updateTransferMenuVisibility()
+    }
+
+    private ensureModeValid (): void {
+        if (this.mode === 'sftp' && !this.sftpEnabled) {
+            this.mode = 'servers'
+        }
+    }
+
+    private updateTransferMenuVisibility (): void {
+        const hide = this.config.store.tabbySidebar?.hideNativeTransfersMenu ?? false
+        document.body.classList.toggle('tabby-sidebar-hide-transfers', hide)
     }
 
     private updateDockedClass (): void {

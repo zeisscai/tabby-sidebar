@@ -20,7 +20,26 @@
         </div>
     </div>
 
-    <div class="search-box">
+    <div class="view-switch" *ngIf="sftpEnabled">
+        <button class="view-tab"
+                type="button"
+                [class.active]="mode === 'servers'"
+                [attr.aria-pressed]="mode === 'servers'"
+                (click)="setMode('servers')">
+            <i class="fas fa-list"></i>
+            <span>服务器</span>
+        </button>
+        <button class="view-tab"
+                type="button"
+                [class.active]="mode === 'sftp'"
+                [attr.aria-pressed]="mode === 'sftp'"
+                (click)="setMode('sftp')">
+            <i class="fas fa-folder-open"></i>
+            <span>SFTP</span>
+        </button>
+    </div>
+
+    <div class="search-box" *ngIf="mode === 'servers'">
         <i class="fas fa-search search-icon"></i>
         <input type="text"
                [(ngModel)]="filter"
@@ -38,7 +57,7 @@
 
     <div class="sidebar-error" *ngIf="errorMessage">{{ errorMessage }}</div>
 
-    <div class="server-list">
+    <div class="server-list" *ngIf="mode === 'servers'">
         <div class="group" *ngFor="let group of visibleGroups; trackBy: trackGroup">
             <button class="group-header" type="button" (click)="toggleGroup(group)">
                 <i class="fas group-chevron"
@@ -77,14 +96,19 @@
         </div>
     </div>
 
+    <tabby-sftp-view *ngIf="mode === 'sftp'"
+                     class="sftp-view"
+                     [active]="mode === 'sftp'"
+                     (closed)="setMode('servers')"></tabby-sftp-view>
+
     <div class="grabber" (mousedown)="startResize($event)"></div>
 </div>
 
 <button class="edge-handle"
         type="button"
         *ngIf="state.collapsed"
-        title="展开服务器列表"
-        aria-label="展开服务器列表"
+        title="展开侧边栏"
+        aria-label="展开侧边栏"
         (click)="expand($event)">
     <i class="fas fa-chevron-right"></i>
 </button>

@@ -1,0 +1,72 @@
+.tabby-sidebar-settings {
+    max-width: 760px;
+}
+
+.settings-title {
+    margin-bottom: 0.25rem;
+}
+
+.settings-subtitle {
+    margin-bottom: 1rem;
+    font-size: 0.85em;
+    opacity: 0.7;
+}
+
+.settings-nav {
+    margin-bottom: 1rem;
+}
+
+.settings-card {
+    border: 1px solid rgba(128, 128, 128, 0.28);
+    border-radius: 6px;
+    background: rgba(128, 128, 128, 0.06);
+    padding: 0.15rem 1rem;
+}
+
+.settings-card.disabled {
+    border-color: rgba(128, 128, 128, 0.18);
+    background: transparent;
+}
+
+.setting-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    padding: 0.75rem 0;
+}
+
+.setting-row + .setting-row {
+    border-top: 1px solid rgba(128, 128, 128, 0.18);
+}
+
+.setting-text {
+    min-width: 0;
+}
+
+.setting-label {
+    font-size: 0.9em;
+    font-weight: 600;
+}
+
+.setting-desc {
+    margin-top: 0.15rem;
+    font-size: 0.8em;
+    line-height: 1.45;
+    opacity: 0.65;
+}
+
+.setting-control {
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.setting-number {
+    width: 90px;
+}
+
+.setting-select {
+    width: 220px;
+}

@@ -1,0 +1,238 @@
+:host {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+    color: var(--theme-fg);
+}
+
+.sftp-browser {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.sftp-toolbar {
+    flex: none;
+    display: flex;
+    align-items: center;
+    gap: 1px;
+    min-width: 0;
+    padding: 2px 4px 4px;
+}
+
+.sftp-tool {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    border: 0;
+    border-radius: 3px;
+    background: transparent;
+    color: var(--theme-secondary-fg);
+    font-size: 11px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.sftp-tool:hover:not(:disabled) {
+    background: var(--theme-secondary);
+    color: var(--theme-fg);
+}
+
+.sftp-tool.active {
+    background: var(--theme-primary);
+    color: var(--theme-bg);
+}
+
+.sftp-tool:disabled {
+    opacity: 0.3;
+    cursor: default;
+}
+
+.sftp-tool:focus-visible {
+    outline: 1px solid var(--theme-primary);
+}
+
+.sftp-breadcrumb {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow-x: auto;
+    white-space: nowrap;
+    font-size: 11px;
+    scrollbar-width: none;
+}
+
+.sftp-breadcrumb::-webkit-scrollbar {
+    display: none;
+}
+
+.sftp-breadcrumb .crumb {
+    color: var(--theme-fg);
+    opacity: 0.72;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.sftp-breadcrumb .crumb:hover {
+    opacity: 1;
+    text-decoration: underline;
+}
+
+.sftp-breadcrumb .crumb::after {
+    content: '/';
+    margin: 0 2px;
+    opacity: 0.35;
+}
+
+.sftp-breadcrumb .crumb:last-child::after {
+    content: '';
+}
+
+.path-input,
+.filter-input {
+    flex: 1 1 auto;
+    min-width: 0;
+    height: 22px;
+    padding: 0 5px;
+    border: 1px solid var(--theme-secondary);
+    border-radius: 3px;
+    outline: none;
+    background: var(--theme-bg-more);
+    color: var(--theme-fg);
+    font: inherit;
+    font-size: 11px;
+}
+
+.path-input:focus,
+.filter-input:focus {
+    border-color: var(--theme-primary);
+}
+
+.sftp-filter-bar {
+    flex: none;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    padding: 0 4px 4px;
+}
+
+.sftp-filter-bar .sftp-tool {
+    width: 22px;
+}
+
+.sftp-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    margin: 0 4px 4px;
+    border: 1px solid var(--theme-secondary);
+    border-radius: 4px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    scrollbar-width: thin;
+}
+
+.sftp-message {
+    padding: 14px 10px;
+    color: var(--theme-secondary-fg);
+    font-size: 11px;
+    line-height: 1.5;
+    text-align: center;
+}
+
+.sftp-message.error {
+    color: #e57373;
+}
+
+.sftp-message .retry {
+    margin-top: 8px;
+    padding: 3px 10px;
+    border: 1px solid var(--theme-secondary);
+    border-radius: 3px;
+    background: var(--theme-bg-more);
+    color: var(--theme-fg);
+    font: inherit;
+    cursor: pointer;
+}
+
+.sftp-list {
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+}
+
+.sftp-row {
+    display: grid;
+    grid-template-columns: 16px minmax(0, 1fr) 54px 64px;
+    gap: 4px;
+    align-items: center;
+    height: 24px;
+    padding: 0 6px;
+    font-size: 11px;
+    line-height: 24px;
+}
+
+.sftp-header {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    color: var(--theme-secondary-fg);
+    background: var(--sidebar-bg, var(--theme-bg-more-2));
+    font-size: 10px;
+    opacity: 0.75;
+}
+
+.sftp-item {
+    color: var(--theme-fg);
+    cursor: pointer;
+    user-select: none;
+}
+
+.sftp-item:hover {
+    background: color-mix(in srgb, var(--theme-primary) 22%, transparent);
+}
+
+.sftp-item.selected {
+    background: color-mix(in srgb, var(--theme-primary) 45%, transparent);
+}
+
+.sftp-item > span {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.cell-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--theme-secondary-fg);
+    font-size: 11px;
+}
+
+.cell-name {
+    display: flex;
+    align-items: center;
+}
+
+.cell-size,
+.cell-date {
+    color: var(--theme-secondary-fg);
+    font-family: monospace;
+    font-size: 10px;
+    text-align: right;
+}
+
+.sftp-empty {
+    padding: 16px 10px;
+    color: var(--theme-secondary-fg);
+    font-size: 11px;
+    text-align: center;
+    opacity: 0.7;
+}

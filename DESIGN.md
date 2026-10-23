@@ -2,8 +2,11 @@
 
 > 包名：`tabby-sidebar` · 目标版本：Tabby 1.0.2xx（Angular 15）
 >
-> 范围：在 Tabby 主窗口左侧提供可收起、可固定的 SSH 服务器列表，双击即可连接。
-> 明确不做：不移除/修改顶部「配置和连接」按钮，不集成 SFTP+，不实现任何文件传输功能。
+> 范围：在 Tabby 主窗口左侧提供可收起、可固定的 SSH 服务器列表，双击即可连接；同一侧栏内通过顶部
+> 「服务器 / SFTP」切换按钮提供 SFTP 文件浏览，并提供对应的插件设置页。
+>
+> SFTP 部分参考 `tabby-better-sidebar` 的交互与设置项，只借鉴文件浏览能力：不引入其收藏、工作区、
+> 隧道、代码片段、内置传输面板等功能。明确不做：不移除/修改顶部「配置和连接」按钮，不集成 SFTP+。
 
 ---
 
@@ -19,13 +22,18 @@ Tabby 默认界面只有顶部的标签栏和「配置和连接」按钮，查�
    - 固定时占据布局空间，始终可见，不自动隐藏；
    - 浮动时覆盖在终端内容上方，选中服务器或点击外部后自动收起；
 5. 记住固定状态、收起状态、宽度和分组折叠状态；
-6. 适配 Tabby 主题色与 macOS 细边框（thin frame）窗口。
+6. 适配 Tabby 主题色与 macOS 细边框（thin frame）窗口；
+7. 侧栏顶部提供「服务器 / SFTP」切换按钮，SFTP 视图浏览当前活动 SSH 会话的文件系统；
+8. SFTP 视图跟随活动 SSH Tab：每个会话缓存一个文件面板并记住浏览路径；会话失效时显示占位，
+   可按配置自动切回服务器列表；
+9. 提供插件设置页：通用（隐藏 Tabby 原生传输菜单）、功能（SFTP 视图开关与显示选项）；
+10. 不引入参考插件的收藏、工作区、隧道、代码片段、传输列表等其余能力。
 
 ### 非目标
 
 - 不删除或重排顶部工具栏按钮；
 - 不修改 Tabby 核心源码，不依赖私有命令；
-- 不接管 SFTP+，也不弹出/嵌入任何 SFTP 面板；
+- 不集成 SFTP+；SFTP 能力直接基于 `tabby-ssh` 的 `SFTPPanelComponent` 扩展；
 - 不提供服务器的新增、编辑、删除功能（仍由 Tabby 原有配置界面负责）；
 - 不做多窗口之间实时同步（每个窗口独立挂载侧边栏，配置变更后各自刷新）。
 
@@ -42,6 +50,11 @@ Tabby 没有官方的「侧边栏扩展」API，但外部插件可以在应用�
 | 修改 Tabby 核心模板 | 可直接增加布局区域，但需要维护 fork，升级成本高 | 不采用 |
 | 插件挂载自定义组件 | 不改核心，只用公开的服务与 DOM 结构 | **采用** |
 | 插件替换/嵌入 SFTP+ | 依赖 SFTP+ 私有声明，且已明确不做 | 不采用 |
+| 子类化 `tabby-ssh` 的 `SFTPPanelComponent` | 复用原生 SFTP 通道、文件操作与右键菜单，只替换模板 | **采用** |
+| 自建 SFTP 协议客户端 | 重复实现传输、权限、符号链接等细节，维护成本高 | 不采用 |
+
+SFTP 视图不是独立窗口，而是侧栏内的第二种模式：顶部切换按钮在「服务器列表 / SFTP 文件浏览」
+之间切换。文件面板通过 `session.openSFTP()` 取得当前 SSH 会话的 SFTP 通道，不额外建立连接。
 
 侧边栏挂在 `.window` 内、`.content.main` 之前。固定模式下它是 flex 子项，挤占主内容宽度；
 浮动模式下改为绝对定位覆盖在主内容之上。Tabby 的模态框层级（Bootstrap modal）高于侧边栏，
@@ -105,6 +118,40 @@ app-root
 - 没有任何 SSH 配置：显示「尚未配置 SSH 服务器」，并提示通过顶部「配置和连接」创建；
 - 有配置但搜索无结果：显示「没有匹配的服务器」。
 
+### 3.5 视图切换与 SFTP 浏览
+
+顶部「服务器 / SFTP」分段按钮仅在功能设置中启用 SFTP 视图时显示：
+
+| 操作 | 结果 |
+| --- | --- |
+| 点击「服务器」 | 显示搜索框与服务器列表 |
+| 点击「SFTP」 | 绑定当前活动 SSH Tab，显示文件浏览面板 |
+| 当前 Tab 不是 SSH（如设置页） | 显示「未选择 SSH 会话」，切回 SSH Tab 后面板恢复 |
+| 没有任何活动 SSH 会话 | 显示「没有活动的 SSH 会话」占位和「返回服务器列表」按钮 |
+| 绑定会话断开/关闭 | 占位提示会话已断开；开启自动返回后在 2.5 秒宽限期后切回服务器列表 |
+| 切换 SSH Tab | 每个 Tab 使用独立面板与路径缓存，互不影响 |
+
+SFTP 面板内的操作沿用 `tabby-ssh` 原生能力：双击进入目录/打开文件、右键菜单、上传文件/文件夹、
+新建目录、路径编辑、过滤、刷新；显示层额外支持隐藏文件过滤、文件夹优先、日期格式与自动刷新。
+
+### 3.6 插件设置页
+
+设置 → 服务器侧边栏，分为「通用」「功能」两个子页：
+
+| 分组 | 设置项 | 默认值 | 说明 |
+| --- | --- | --- | --- |
+| 通用 | 隐藏 Tabby 的传输菜单 | 关 | 隐藏标签栏中的原生传输下拉菜单 |
+| 功能 | SFTP 视图 | 开 | 显示侧栏顶部切换按钮与 SFTP 浏览 |
+| 功能 | 自动刷新间隔（秒） | 0 | 0 表示关闭；范围 0–3600 |
+| 功能 | 显示隐藏文件 | 开 | 是否显示以 `.` 开头的条目 |
+| 功能 | 文件夹优先 | 开 | 目录排在文件之前，其余按名称排序 |
+| 功能 | 没有 SSH 会话时返回服务器列表 | 开 | 会话断开 2.5 秒后自动返回列表 |
+| 功能 | 日期格式 | 跟随 Tabby 语言 | 可选 跟随语言 / 日/月/年 / ISO 8601 |
+
+「隐藏 Tabby 的传输菜单」默认关闭：本插件没有自己的传输进度面板，关闭时用户仍可在原生菜单中
+查看上传/下载进度。启用后通过 `body.tabby-sidebar-hide-transfers` 全局类隐藏原生菜单，选择器与
+参考插件一致（`.btn-group.background > div[ngbDropdown]`、`transfers-menu`）。
+
 ---
 
 ## 4. 数据与过滤规则
@@ -143,6 +190,26 @@ if (!tab) { /* 提示无法打开 */ }
 - `config.changed$` 触发时重新读取分组；
 - 侧栏从收起状态展开时重新读取一次。
 
+### SFTP 会话绑定规则
+
+目标会话取 `AppService.activeTab`；若是 `SplitTabComponent`，取 `getFocusedTab()`。用结构化类型判断会话可用：
+
+```ts
+tab.sshSession?.open === true
+&& tab.session != null
+&& typeof tab.openSFTP === 'function'
+```
+
+这样不依赖 `tabby-ssh` 是否导出 `SSHTabComponent` 类型，也避免重复模块实例导致 `instanceof` 失效。
+面板在以下时机同步绑定：
+
+- `activeTabChange$`、`tabsChanged$`、`tabClosed$`、`tabRemoved$`；
+- 每秒一次的低频轮询（覆盖会话内部状态变化）；
+- SFTP 模式被打开时。
+
+每个 SSH Tab 缓存一个 `SftpBrowserComponent` 实例与最近路径：切走时从 DOM 分离并暂停自动刷新，
+切回时恢复。Tab 关闭或会话对象变化时销毁实例。SFTP 通道没有独立关闭方法，会随 SSH 会话结束而失效。
+
 ---
 
 ## 5. 技术架构
@@ -156,13 +223,26 @@ tabby-sidebar/
 ├── tsconfig.json
 ├── webpack.config.js
 └── src/
-    ├── index.ts                        # NgModule 入口
+    ├── index.ts                        # NgModule 入口、Provider 注册
+    ├── config-provider.ts              # tabbySidebar 配置项与默认值
     ├── typings.d.ts                    # *.html / *.css 类型声明
     ├── layout/
-    │   ├── sidebar-mount.service.ts    # DOM 挂载与组件创建
-    │   ├── server-sidebar.component.ts
+    │   ├── sidebar-mount.service.ts    # DOM 挂载、全局样式注入
+    │   ├── server-sidebar.component.ts # 列表、视图切换、传输菜单显隐
     │   ├── server-sidebar.component.html
     │   └── server-sidebar.component.css
+    ├── sftp/
+    │   ├── sftp-view.component.ts      # 会话解析、面板缓存、自动返回
+    │   ├── sftp-view.component.html
+    │   ├── sftp-view.component.css
+    │   ├── sftp-browser.component.ts   # 继承 SFTPPanelComponent，自定义显示选项
+    │   ├── sftp-browser.component.html # 紧凑侧栏布局
+    │   └── sftp-browser.component.css
+    ├── settings/
+    │   ├── settings-tab.provider.ts    # SettingsTabProvider 注册
+    │   ├── settings-tab.component.ts
+    │   ├── settings-tab.component.html
+    │   └── settings-tab.component.css
     └── models/
         └── sidebar-state.ts            # 持久化状态类型与默认值
 ```
@@ -227,6 +307,46 @@ interface SidebarState {
 - 固定展开时给 `.window` 加 `tabby-sidebar-docked` 类，并注入一条全局样式隐藏
   `.tab-bar > .inset.background`（macOS 红绿灯留白）；收起或切到浮层时移除该类。
 
+### 5.6 SFTP 视图
+
+`SftpBrowserComponent` 继承 `tabby-ssh` 的 `SFTPPanelComponent`，复用其 `open()`、`upload()`、
+`openCreateDirectoryModal()`、`showContextMenu()`、`navigate()` 等实现，只提供侧栏尺寸的模板与样式。
+构造函数把 `NgbModal`、`NotificationsService`、`PlatformService` 与可选的右键菜单 Provider 传给父类。
+
+显示增强在子类内完成，不修改继承实现：
+
+- `visibleFileList`：自行实现过滤，避免依赖较新 Tabby 才有的 `filteredFileList`；
+- `applyDisplayOptions()`：隐藏文件过滤、文件夹优先排序；
+- `formatDate()`：`locale` / `dmy` / `iso` 三种格式；
+- `startAutoRefresh()`：按配置周期性 `navigate(path, false)`；
+- 上传、新建目录、打开文件等操作捕获异常并通过通知提示。
+
+`SftpViewComponent` 负责生命周期：动态创建面板、`ApplicationRef.attachView()`、把根节点挂到
+`.sftp-panel-host`；切走时 `detachView()` 并移除节点。面板按 SSH Tab 缓存，避免重复打开 SFTP 通道。
+
+### 5.7 配置与设置页注册
+
+```ts
+providers: [
+  { provide: ConfigProvider, useClass: TabbySidebarConfigProvider, multi: true },
+  { provide: SettingsTabProvider, useClass: TabbySidebarSettingsTabProvider, multi: true },
+]
+```
+
+配置命名空间为 `config.store.tabbySidebar`，默认值见 3.6 表格。设置组件监听 `config.changed$`，
+写入后调用 `config.save()`；侧栏与 SFTP 面板同样订阅配置变更，因此修改后即时生效。
+
+### 5.8 隐藏原生传输菜单
+
+启用该设置时给 `document.body` 添加 `tabby-sidebar-hide-transfers`，由挂载服务注入的全局样式隐藏：
+
+```css
+body.tabby-sidebar-hide-transfers .btn-group.background > div[ngbDropdown] { display: none !important; }
+body.tabby-sidebar-hide-transfers transfers-menu { display: none !important; }
+```
+
+关闭设置、侧栏销毁时移除该类。选择器与参考插件一致；若 Tabby 调整标签栏结构，需要同步更新。
+
 ---
 
 ## 6. 构建与安装
@@ -234,13 +354,17 @@ interface SidebarState {
 ### 构建
 
 ```bash
-npm install
+npm install --legacy-peer-deps
 npm run build        # 输出 dist/index.js
 npm run typecheck    # TypeScript 检查
 ```
 
-Webpack 配置：`target: node`、`libraryTarget: commonjs2`，将 `@angular/*`、`rxjs`、`tabby-*`
-与 Node 内置模块设为 external，由 Tabby 宿主提供。
+Webpack 配置：`target: node`、`libraryTarget: commonjs2`，将 `@angular/*`、`@ng-bootstrap/*`、
+`rxjs`、`tabby-*` 与 Node 内置模块设为 external，由 Tabby 宿主提供。
+
+开发依赖包含 `tabby-ssh`、`tabby-settings` 与 `@ng-bootstrap/ng-bootstrap`：仅用于类型检查和
+编译期继承 `SFTPPanelComponent`，运行时不打包。项目使用 TypeScript 5.6，而 Angular 15 的
+`@angular/compiler-cli` 声明只支持 TS < 5.0，安装时需加 `--legacy-peer-deps`。
 
 ### 安装到 Tabby
 
@@ -282,6 +406,19 @@ ln -s "$PWD" "$HOME/Library/Application Support/tabby/plugins/node_modules/tabby
 - [ ] 浅色主题、全屏模式下的显示效果（已完成 macOS thin frame + 深色主题验证）；
 - [ ] 打开设置/编辑配置等弹窗时，侧栏不遮挡弹窗。
 
+### SFTP 与设置（隔离实例 + 本地 sshd）
+
+- [x] 顶部「服务器 / SFTP」切换正常，服务器列表与 SFTP 面板互斥显示；
+- [x] 双击服务器连接后，SFTP 视图绑定当前会话并列出文件（名称、大小、修改日期）；
+- [x] 双击目录进入、面包屑返回根目录、手输路径跳转均正常；
+- [x] 隐藏文件过滤、文件夹优先、日期格式（locale / ISO 8601）即时生效；
+- [x] 自动刷新设为 1 秒后，远端新建文件无需手动刷新即可出现；
+- [x] 无活动会话时显示「没有活动的 SSH 会话」；切到设置页时显示「未选择 SSH 会话」，切回 SSH Tab 恢复；
+- [x] 关闭全部 SSH 标签后约 2.5 秒自动返回服务器列表；
+- [x] 设置页「通用 / 功能」渲染正常，选项写入 `config.yaml` 并即时生效；
+- [x] 隐藏原生传输菜单开关正确添加/移除全局类，原生下拉菜单变为 `display: none`；
+- [ ] 上传/下载、右键菜单等真实文件写入操作（建议发布前用非测试账号补测）。
+
 ### 回归检查
 
 - [ ] 顶部「配置和连接」按钮及原有命令不受影响；
@@ -305,5 +442,10 @@ ln -s "$PWD" "$HOME/Library/Application Support/tabby/plugins/node_modules/tabby
 | 原生 profile-tree 同时开启 | 出现两份列表 | 允许共存；文档说明可关闭原生侧栏 |
 | macOS 标题栏/全屏差异 | 顶部留白或拖拽区不准确 | 复用原生 `mac-inset` 规则，并监听 resize |
 | 主题差异 | 某些自定义主题变量缺失 | 只使用 Tabby 长期存在的主题变量 |
+| `SFTPPanelComponent` 内部 API 变化 | 继承字段/方法在 Tabby 升级后改名或移除 | 固定的 `session`、`navigate`、`open`、`upload` 等核心成员较稳定；发布前对目标 Tabby 版本回归 |
+| npm `tabby-ssh` 类型落后于运行时 | 类型检查缺少新字段 | 不使用 `filteredFileList` 等新成员，过滤与显示逻辑在子类自行实现 |
+| 传输菜单 DOM 结构变化 | 隐藏设置失效 | 选择器集中在挂载服务的全局样式中，升级时单点调整 |
+| SFTP 面板动态挂载 | 面板根节点未纳入变更检测 | 与 Tabby 动态创建 Tab 相同：`attachView` + 手动 append，并在销毁时 `detachView` |
 
-后续可扩展（不在本次范围）：最近连接置顶、当前 Tab 高亮、自定义宽度/快捷键、按分组过滤等。
+后续可扩展（不在本次范围）：最近连接置顶、当前 Tab 高亮、自定义宽度/快捷键、按分组过滤；
+SFTP 侧可增加可排序列、收藏目录、拖拽上传/下载、内置传输进度面板等。

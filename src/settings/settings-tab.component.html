@@ -1,0 +1,105 @@
+<div class="tabby-sidebar-settings">
+    <h3 class="settings-title">服务器侧边栏</h3>
+    <div class="settings-subtitle">侧边栏与 SFTP 视图的显示选项。</div>
+
+    <ul class="nav nav-tabs settings-nav">
+        <li class="nav-item">
+            <a class="nav-link" href="#" [class.active]="section === 'general'" (click)="setSection('general', $event)">通用</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#" [class.active]="section === 'features'" (click)="setSection('features', $event)">功能</a>
+        </li>
+    </ul>
+
+    <ng-container *ngIf="section === 'general'">
+        <div class="settings-card">
+            <div class="setting-row">
+                <div class="setting-text">
+                    <div class="setting-label">隐藏 Tabby 的传输菜单</div>
+                    <div class="setting-desc">隐藏标签栏中的原生传输下拉菜单。关闭后可在传输时查看原生进度。</div>
+                </div>
+                <div class="setting-control">
+                    <toggle [ngModel]="hideNativeTransfersMenu" (ngModelChange)="setHideNativeTransfersMenu($event)"></toggle>
+                </div>
+            </div>
+        </div>
+    </ng-container>
+
+    <ng-container *ngIf="section === 'features'">
+        <div class="settings-card" [class.disabled]="!showSftp">
+            <div class="setting-row">
+                <div class="setting-text">
+                    <div class="setting-label">SFTP 视图</div>
+                    <div class="setting-desc">在侧边栏顶部显示「服务器 / SFTP」切换按钮，并浏览当前 SSH 会话的文件系统。</div>
+                </div>
+                <div class="setting-control">
+                    <toggle [ngModel]="showSftp" (ngModelChange)="setShowSftp($event)"></toggle>
+                </div>
+            </div>
+
+            <ng-container *ngIf="showSftp">
+                <div class="setting-row">
+                    <div class="setting-text">
+                        <div class="setting-label">自动刷新间隔（秒）</div>
+                        <div class="setting-desc">定期重新读取当前目录；0 表示关闭。</div>
+                    </div>
+                    <div class="setting-control">
+                        <input class="form-control setting-number"
+                               type="number"
+                               min="0"
+                               max="3600"
+                               step="1"
+                               [ngModel]="autoRefreshSeconds"
+                               (ngModelChange)="setAutoRefreshSeconds($event)" />
+                    </div>
+                </div>
+
+                <div class="setting-row">
+                    <div class="setting-text">
+                        <div class="setting-label">显示隐藏文件</div>
+                        <div class="setting-desc">显示以「.」开头的文件和文件夹。</div>
+                    </div>
+                    <div class="setting-control">
+                        <toggle [ngModel]="showHidden" (ngModelChange)="setShowHidden($event)"></toggle>
+                    </div>
+                </div>
+
+                <div class="setting-row">
+                    <div class="setting-text">
+                        <div class="setting-label">文件夹优先</div>
+                        <div class="setting-desc">文件夹排在文件之前，其余按名称排序。</div>
+                    </div>
+                    <div class="setting-control">
+                        <toggle [ngModel]="foldersFirst" (ngModelChange)="setFoldersFirst($event)"></toggle>
+                    </div>
+                </div>
+
+                <div class="setting-row">
+                    <div class="setting-text">
+                        <div class="setting-label">没有 SSH 会话时返回服务器列表</div>
+                        <div class="setting-desc">当前绑定的 SSH 会话断开后，自动切回「服务器」视图。</div>
+                    </div>
+                    <div class="setting-control">
+                        <toggle [ngModel]="autoReturnToProfiles" (ngModelChange)="setAutoReturnToProfiles($event)"></toggle>
+                    </div>
+                </div>
+
+                <div class="setting-row">
+                    <div class="setting-text">
+                        <div class="setting-label">日期格式</div>
+                        <div class="setting-desc">SFTP 文件列表「修改日期」列的显示格式。</div>
+                    </div>
+                    <div class="setting-control">
+                        <select class="form-control setting-select"
+                                [ngModel]="dateFormat"
+                                (ngModelChange)="setDateFormat($event)">
+                            <option value="locale">跟随 Tabby 语言</option>
+                            <option value="dmy">日/月/年（08/10/2026）</option>
+                            <option value="iso">ISO 8601（2026-10-08）</option>
+                        </select>
+                    </div>
+                </div>
+            </ng-container>
+        </div>
+    </ng-container>
+</div>
