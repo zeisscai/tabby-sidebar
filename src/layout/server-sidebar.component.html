@@ -1,0 +1,90 @@
+<div class="sidebar" *ngIf="!state.collapsed">
+    <div class="sidebar-header">
+        <span class="sidebar-title">服务器</span>
+        <div class="header-actions">
+            <button class="icon-button"
+                    type="button"
+                    [class.active]="state.pinned"
+                    [title]="state.pinned ? '取消固定（自动隐藏）' : '固定显示'"
+                    [attr.aria-label]="state.pinned ? '取消固定' : '固定显示'"
+                    (click)="togglePinned()">
+                <i class="fas fa-thumbtack"></i>
+            </button>
+            <button class="icon-button"
+                    type="button"
+                    title="收起"
+                    aria-label="收起"
+                    (click)="collapse()">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+        </div>
+    </div>
+
+    <div class="search-box">
+        <i class="fas fa-search search-icon"></i>
+        <input type="text"
+               [(ngModel)]="filter"
+               placeholder="搜索服务器"
+               aria-label="搜索服务器" />
+        <button class="search-clear"
+                type="button"
+                *ngIf="filter"
+                title="清除搜索"
+                aria-label="清除搜索"
+                (click)="filter = ''">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+
+    <div class="sidebar-error" *ngIf="errorMessage">{{ errorMessage }}</div>
+
+    <div class="server-list">
+        <div class="group" *ngFor="let group of visibleGroups; trackBy: trackGroup">
+            <button class="group-header" type="button" (click)="toggleGroup(group)">
+                <i class="fas group-chevron"
+                   [ngClass]="isGroupExpanded(group) ? 'fa-chevron-down' : 'fa-chevron-right'"></i>
+                <i class="far fa-folder group-icon"></i>
+                <span class="group-name">{{ group.name }}</span>
+                <span class="group-count">{{ group.profiles.length }}</span>
+            </button>
+
+            <div class="group-items" *ngIf="isGroupExpanded(group)">
+                <button class="server-item"
+                        type="button"
+                        *ngFor="let profile of group.profiles; trackBy: trackProfile"
+                        [title]="profileHost(profile)"
+                        (click)="connect(profile)">
+                    <profile-icon *ngIf="profile.icon" [icon]="profile.icon" [color]="profile.color"></profile-icon>
+                    <i class="fas fa-server server-fallback-icon"
+                       *ngIf="!profile.icon"
+                       [style.color]="profile.color"></i>
+                    <span class="server-info">
+                        <span class="server-name">{{ profile.name }}</span>
+                        <span class="server-host" *ngIf="profileHost(profile)">{{ profileHost(profile) }}</span>
+                    </span>
+                    <i class="fas fa-plug connect-icon"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="sidebar-empty" *ngIf="visibleGroups.length === 0">
+            <i class="fas fa-server"></i>
+            <ng-container *ngIf="groups.length === 0">
+                <p>尚未配置 SSH 服务器</p>
+                <p class="hint">请通过顶部「配置和连接」创建服务器配置。</p>
+            </ng-container>
+            <p *ngIf="groups.length > 0">没有匹配的服务器</p>
+        </div>
+    </div>
+
+    <div class="grabber" (mousedown)="startResize($event)"></div>
+</div>
+
+<button class="edge-handle"
+        type="button"
+        *ngIf="state.collapsed"
+        title="展开服务器列表"
+        aria-label="展开服务器列表"
+        (click)="expand($event)">
+    <i class="fas fa-chevron-right"></i>
+</button>

@@ -1,0 +1,47 @@
+{
+  "name": "tabby-sidebar",
+  "version": "0.1.0",
+  "description": "A collapsible, pinnable server sidebar for Tabby",
+  "keywords": [
+    "tabby-plugin",
+    "ssh",
+    "sidebar"
+  ],
+  "main": "dist/index.js",
+  "files": [
+    "dist",
+    "DESIGN.md"
+  ],
+  "scripts": {
+    "build": "webpack --mode production",
+    "watch": "webpack --mode development --watch",
+    "typecheck": "tsc --noEmit"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://git.sg-hpc.com.cn/zeiss/tabby-sidebar.git"
+  },
+  "author": "zeiss",
+  "license": "MIT",
+  "peerDependencies": {
+    "@angular/common": "^15",
+    "@angular/core": "^15",
+    "@angular/forms": "^15",
+    "rxjs": "^7",
+    "tabby-core": "*"
+  },
+  "devDependencies": {
+    "@angular/animations": "15.2.10",
+    "@angular/common": "15.2.10",
+    "@angular/core": "15.2.10",
+    "@angular/forms": "15.2.10",
+    "@angular/platform-browser": "15.2.10",
+    "@angular/platform-browser-dynamic": "15.2.10",
+    "rxjs": "7.8.2",
+    "tabby-core": "1.0.231-nightly.0",
+    "ts-loader": "^9.5.2",
+    "typescript": "5.6.3",
+    "webpack": "^5.98.0",
+    "webpack-cli": "^6.0.1"
+  }
+}
